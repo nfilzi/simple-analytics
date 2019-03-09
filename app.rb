@@ -5,13 +5,13 @@ Bundler.require(:default)
 require 'dry/events/publisher'
 require 'dry/events/listener'
 
-class Application
+class Analytics
   include Dry::Events::Publisher[:analytics]
 
   register_event("UserSignedUpEvent")
 end
 
-module Analytics
+class Analytics
   class Event
     include Dry::Events::Listener[:analytics]
 
@@ -37,7 +37,7 @@ class UserSignedUpEvent < Analytics::Event
   end
 end
 
-app = Application.new
+app = Analytics.new
 app.publish("UserSignedUpEvent", user: 'Jane')
 
 # app.publish("UserSignedUpEvent", data: EventData.new(user: 'Jane'))
