@@ -75,14 +75,34 @@ class Analytics
   end
 end
 
-analytics = Analytics.new
+# In the context of a rails controller..
 
-# Testing setup with event data class
-analytics.publish(
-  "Analytics::PaidContentPurchased",
-  data: Analytics::EventData.new(
-    user_id:      1,
-    content_id:   1,
-    content_type: :serie
-  )
-)
+class ApplicationController
+
+  private
+  def analytics
+    Analytics.new
+  end
+end
+
+class PurchasesController < ApplicationController
+  def create
+    if :success
+      # [...]
+
+      analytics.publish("Analytics::PaidContentPurchased",
+        data: Analytics::EventData.new(
+          user_id:      1,
+          content_id:   1,
+          content_type: :serie
+        )
+      )
+
+      # [...]
+    else
+      # [...]
+    end
+  end
+end
+
+PurchasesController.new.create
