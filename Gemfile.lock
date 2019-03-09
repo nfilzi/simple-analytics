@@ -1,0 +1,20 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    concurrent-ruby (1.1.4)
+    dry-core (0.4.7)
+      concurrent-ruby (~> 1.0)
+    dry-equalizer (0.2.2)
+    dry-events (0.1.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 0.4)
+      dry-equalizer (~> 0.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  dry-events
+
+BUNDLED WITH
+   2.0.1
