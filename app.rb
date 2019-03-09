@@ -11,12 +11,14 @@ class Application
   register_event("UserSignedUpEvent")
 end
 
-class AnalyticEvent
-  include Dry::Events::Listener[:analytics]
+module Analytics
+  class Event
+    include Dry::Events::Listener[:analytics]
 
-  def self.inherited(subclass)
-    subscribe(subclass.to_s) do |event|
-      subclass.record(event)
+    def self.inherited(subclass)
+      subscribe(subclass.to_s) do |event|
+        subclass.record(event)
+      end
     end
   end
 end
@@ -28,7 +30,7 @@ end
 #   end
 # end
 
-class UserSignedUpEvent < AnalyticEvent
+class UserSignedUpEvent < Analytics::Event
   def self.record(event)
     puts "EVENT #{event.id}"
     puts "USER #{event[:user]}"
