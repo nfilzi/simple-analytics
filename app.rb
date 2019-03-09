@@ -5,11 +5,20 @@ Bundler.require(:default)
 require 'dry/events/publisher'
 require 'dry/events/listener'
 
+########################################################
+# Event bus
+########################################################
+
 class Analytics
   include Dry::Events::Publisher[:analytics]
 
-  register_event("UserSignedUpEvent")
+  register_event("Analytics::PaidContentPurchased")
 end
+
+
+########################################################
+# Base event
+########################################################
 
 class Analytics
   class Event
@@ -17,27 +26,63 @@ class Analytics
 
     def self.inherited(subclass)
       subscribe(subclass.to_s) do |event|
-        subclass.record(event)
+        subclass.new(event).record
+      end
+    end
+
+    attr_reader :event, :data
+
+    def initialize(event)
+      @event = event
+      @data  = event[:data]
+    end
+  end
+end
+
+########################################################
+# Events
+########################################################
+
+class Analytics
+  class PaidContentPurchased < Analytics::Event
+    def record
+      puts "EVENT #{event.id}" # => Analytics::PaidContentPurchased
+      puts
+      #############################################################
+      # data must be of class Analytics::EventData to be working
+      puts "USER ID      #{data.user_id}"
+      puts "CONTENT ID   #{data.content_id}"
+      puts "CONTENT TYPE #{data.content_type}"
+      #############################################################
+      puts
+      puts "Saving event in DB, enqueuing background job for exporting to Intercom, Mixpanel, Mailchimp & Slack.."
+    end
+  end
+end
+
+########################################################
+# Modelizing event data
+########################################################
+
+class Analytics
+  class EventData
+    def initialize(elements)
+      elements.each do |key, value|
+        instance_variable_set("@#{key}", value)
+        self.class.send(:attr_reader, key)
       end
     end
   end
 end
 
-# module Analytics
-#   class EventData
-#     def initialize(elements)
-#     end
-#   end
-# end
+analytics = Analytics.new
 
-class UserSignedUpEvent < Analytics::Event
-  def self.record(event)
-    puts "EVENT #{event.id}"
-    puts "USER #{event[:user]}"
-  end
-end
-
-app = Analytics.new
-app.publish("UserSignedUpEvent", user: 'Jane')
-
-# app.publish("UserSignedUpEvent", data: EventData.new(user: 'Jane'))
+# Testing setup with event data class
+analytics.publish(
+  "Analytics::PaidContentPurchased",
+  data: Analytics::EventData.new(
+    user_id:      1,
+    content_id:   1,
+    content_type: :serie
+  )
+)
